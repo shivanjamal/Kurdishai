@@ -75,7 +75,6 @@
             gap: 12px;
         }
         
-        /* ستایلکرنا سکروڵباری */
         .chat-messages::-webkit-scrollbar {
             width: 8px;
         }
@@ -116,7 +115,7 @@
         
         .typing-indicator {
             align-self: flex-start;
-            display: none; /* ب نهێنی بهێلە */
+            display: none;
         }
         
         .typing-indicator span {
@@ -186,7 +185,6 @@
     </style>
 </head>
 <body>
-    <!-- === بەشێ HTML (پێکهاتە) === -->
     <div class="chat-container">
         <div class="chat-header">
             <h2>AI Chat Assistant</h2>
@@ -196,7 +194,6 @@
             <div class="message ai-message">
                 <span>سلاڤ! ئەڤە دیزاینەکا نوویە. پرسیارا خۆ بکە.</span>
             </div>
-            <!-- نیشاندەرا نڤیسینێ دێ ل ڤێرە هێت -->
             <div class="message typing-indicator" id="typing-indicator">
                 <span></span><span></span><span></span>
             </div>
@@ -210,7 +207,6 @@
         </form>
     </div>
 
-    <!-- === بەشێ JavaScript (زیندیاتی و لۆجیک) === -->
     <script>
         const chatForm = document.getElementById('chat-form');
         const messageInput = document.getElementById('message-input');
@@ -225,14 +221,13 @@
             appendMessage('user', userMessageText);
             messageInput.value = '';
             
-            showTypingIndicator(); // نیشاندەرا نڤیسینێ دیار بکە
+            showTypingIndicator();
 
-            // ل ڤێرە دێ پەیوەندی ب AI یێ راستەقینە هێتە کرن
             setTimeout(function () {
-                hideTypingIndicator(); // نیشاندەرا نڤیسینێ ڤەشێرە
+                hideTypingIndicator();
                 const aiResponse = "ببوره، ئەز هێشتا ب چ سێرڤەران ڤە نەهاتیمە گرێدان. بەلێ دیزاین جوانە، وانیە؟";
                 appendMessage('ai', aiResponse);
-            }, 2500); // پشتی 2.5 چرکەیان دا هەست پێ بکەی
+            }, 2500);
         });
 
         function appendMessage(sender, text) {
@@ -240,7 +235,6 @@
             messageDiv.classList.add('message', `${sender}-message`);
             messageDiv.innerHTML = `<span>${text}</span>`;
             
-            // نیشاندەرا نڤیسینێ بهێلە ل دوماهیێ
             chatMessages.insertBefore(messageDiv, typingIndicator);
 
             scrollToBottom();
