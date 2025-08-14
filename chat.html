@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat | گەپ و گفتوگۆ</title>
+    <!-- گرێدانا ئایکۆنان -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- === بەشێ CSS (ستایل) === -->
+    <style>
+        /* === گرێدانا فۆنتێ نوی و جوانتر === */
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            /* === بکارئینانا فۆنتێ نوی === */
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 480px; /* هندەک مەزنتر لێهات */
+            max-width: 95%;
+            height: 90vh;
+            background-color: #ffffff;
+            border-radius: 16px; /* هندەک خڕتر */
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(100deg, #5D5FEF, #8A63F4);
+            color: white;
+            padding: 20px 25px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .chat-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700; /* قەلەوتر */
+        }
+
+        .chat-header p {
+            margin-top: 4px;
+            font-size: 0.85rem;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 18px;
+            padding: 12px 18px;
+            border-radius: 20px;
+            max-width: 80%;
+            line-height: 1.6;
+            font-size: 1.05rem; /* هندەک مەزنتر بۆ خواندنێ */
+        }
+
+        .ai-message {
+            background-color: #F1F1F5;
+            color: #222;
+            border-bottom-left-radius: 5px;
+            align-self: flex-start;
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .user-message {
+            background-color: #5D5FEF;
+            color: white;
+            border-bottom-right-radius: 5px;
+            margin-left: auto;
+            margin-right: 0;
+        }
+        
+        .message span {
+            word-wrap: break-word;
+        }
+
+        .chat-input-form {
+            display: flex;
+            align-items: center; /* بۆ رێکخستنێ */
+            padding: 15px 20px;
+            background-color: #f9f9f9;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        #message-input {
+            flex-grow: 1;
+            border: 1px solid #ddd;
+            padding: 14px 18px;
+            border-radius: 28px;
+            font-size: 1rem;
+            background-color: #ffffff;
+            outline: none;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            margin-left: 12px;
+            transition: border-color 0.3s ease;
+        }
+        
+        #message-input:focus {
+             border-color: #5D5FEF;
+        }
+
+        #send-button {
+            background-color: #5D5FEF;
+            color: white;
+            border: none;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #send-button:hover {
+            background-color: #4a4cc7;
+            transform: scale(1.05); /* هندەک ئێفێکت */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- === بەشێ HTML (پێکهاتە) === -->
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>گفتوگویا زیرەک</h2>
+            <p>ئونلاین</p>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message ai-message">
+                <span>سلاڤ! ئەز چاوا دشێم هاریکاریا تە بکەم؟</span>
+            </div>
+        </div>
+        <form class="chat-input-form" id="chat-form">
+            <button type="submit" id="send-button">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+            <input type="text" id="message-input" placeholder="پەیامەکێ بنڤیسە..." autocomplete="off">
+        </form>
+    </div>
+
+    <!-- === بەشێ JavaScript (زیندیاتی) === -->
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const chatMessages = document.getElementById('chat-messages');
+
+        chatForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const userMessageText = messageInput.value.trim();
+            if (userMessageText === '') return;
+            appendMessage('user', userMessageText);
+            messageInput.value = '';
+            
+            // نیشاندانا نڤیسینێ...
+            showTypingIndicator();
+
+            // ل ڤێرە دێ کۆدێ پەیوەندیێ ب AI یێ راستەقینە هێتە دانان
+            setTimeout(function () {
+                hideTypingIndicator(); // ڤەشارتنا نیشاندەرێ
+                const aiResponse = "ئەڤە بەرسڤەکا تاقیگەهی یە. ئەز هێشتا ب سێرڤەرێ راستەقینە ڤە نەهاتیمە گرێدان.";
+                appendMessage('ai', aiResponse);
+            }, 1500); // پشتی ١.٥ چرکەیەکێ
+        });
+
+        function appendMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender + '-message');
+            const messageSpan = document.createElement('span');
+            messageSpan.textContent = text;
+            messageDiv.appendChild(messageSpan);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // --- بۆ نیشاندانا "AI is typing..." ---
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.classList.add('message', 'ai-message');
+            typingDiv.id = 'typing-indicator'; // ID بۆ سڕینێ
+            
+            const typingSpan = document.createElement('span');
+            typingSpan.textContent = 'د نڤیسیت...';
+            typingDiv.appendChild(typingSpan);
+
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+    </script>
+
+</body>
+</html>
